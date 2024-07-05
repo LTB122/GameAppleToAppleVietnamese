@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Apples-to-Apples Game</title>
+  <link rel="stylesheet" href="main.css">
+</head>
+<body>
+  <div class="container">
+    <h1>EAAI 25: Apples-to-Apples Game Console</h1>
+      <P style="text-align: center;"><input type="checkbox" id="autoadvance" name="autoadvance" value="Y" onclick="toggle_autoadvance()" checked>
+<label for="autoadvance">Tự động tiến hành qua vòng</label> <label for="delay">Trì hoãn (s):</label>
+<input type="number" id="delay" name="delay" min="1" max="120" value="6" />
+      </P>
+    
+    <div class="controls">
+      <button id="start-game" onclick="start_game()">Chơi lại</button>
+      <button id="play-round" onclick="play_round()">Bắt đầu vòng đấu (Play round)</button>
+      <button id="judge-round" onclick="judge_round()" disabled>Thẩm định</button>
+      <button id="end-round" onclick="end_round()" disabled>Hoàn thành vòng đấu</button>
+      <button id="clear-log" onclick="clear_log()">Xóa lịch sử</button>
+    </div>
+  
+    <div id="statusDiv" class="game-status">
+      <p>Khi có ít nhất 3 người chơi tham gia, bạn có thể bắt đầu game.</p>
+    </div>
+
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
