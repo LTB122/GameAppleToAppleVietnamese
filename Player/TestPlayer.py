@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu May  2 14:52:08 2024
+Created on Tue July  23 19:46:08 2024
 
-@author: jjb24
+@author: LTB122
 """
 import random
 from Player import Player
@@ -11,59 +11,88 @@ from Player import Player
 # This player makes all choices base on LLM
 ###
 
-import requests
-import json
+import google.generativeai as genai #import library
+import time
 
-def get_response(prompt):
-    url = 'https://ws.gvlab.org/fablab/ura/llama/api/generate_stream'
-    data = {"inputs": "<start_of_turn>user\n " + prompt + " <end_of_turn>\n<start_of_turn>model\n"}
-    headers = {'Content-Type': 'application/json'}
-    response = requests.post(url, json=data, headers=headers)
-
-    lines = response.text.strip().split('\n')
-    output = ""
-    for line in lines:
-        if line.strip() == '':
-            continue
-        data = json.loads(line.replace('data:', ''))
-        token_text = str(data['token']['text']).encode('latin1').decode('utf-8')
-        if token_text != "<eos>":
-            output += token_text
-
-    return output
+def get_response(prompt): #function to generate output
+    genai.configure(api_key="AIzaSyAz3AVttzNbdcJr4bnKkfFG2pV5-cq1ttI") #use gemini api
+    generation_config = {
+        "temperature": 0.5,
+        "top_p": 0.9,
+        "top_k": 40
+    }
+    #set the safety infor
+    safety_settings = [
+        {
+        "category": "HARM_CATEGORY_HARASSMENT",
+        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+        "category": "HARM_CATEGORY_HATE_SPEECH",
+        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+        "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+        "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        },
+    ]
+    #create a model
+    model = genai.GenerativeModel(model_name="gemini-1.0-pro",
+                                    generation_config=generation_config,
+                                    safety_settings=safety_settings)
+    convo = model.start_chat() #start to chat
+    try:
+        convo.send_message(prompt) #ask for the answer
+    except:
+        time.sleep(5)
+        convo.send_message(prompt)
+    output = convo.last.text #get the output
+    return output #return the output
 
 def choose_option(target, hand):
-    prompt = "Chọn 1 từ trong các từ sau: 0. "
+    prompt = "Choose one word from the following words: 0. "
     prompt+= hand[0]
+
 
     for i in range(1,len(hand)):
         prompt+= ", "+ str(i) + ". " + hand[i]
 
-    prompt+= ". Từ nào là phù hợp nhất với tính từ: '"+ target + "'. Hãy chọn và trả về 1 con số là số thứ tự của từ đã chọn và ghi trên 1 dòng."
+
+    prompt+= ". Which word best fits the adjective: '"+ target + "'? Please select and return the index number of the chosen word on a single line."
     res = get_response(prompt)
     print(res)
     bang_anh_xa = str.maketrans("", "", ".,:!*#()")
 
-    # Áp dụng bảng ánh xạ vào chuỗi để loại bỏ các ký tự đặc biệt
+
+    # Apply a mapping table to the string to remove special characters.
     chuoi_sau_khi_xoa = res.translate(bang_anh_xa)
 
-    # Tách chuỗi thành các từ
+
+    # Split the string into words.
     tach_tu = chuoi_sau_khi_xoa.split()
 
-    # Lọc và lấy các số từ danh sách các từ
+
+    # Filter and retrieve numbers from a list of words.
     so = [tu for tu in tach_tu if tu.isdigit()]
 
-    # Chuyển đổi mảng chứa các chuỗi số thành mảng chứa các số nguyên
+
+    # Convert an array containing string numbers into an array of integers.
     mang_so = list(map(int, so))
 
+
     ans = 0
-    # Kiểm tra mang_so và chọn từ phù hợp
+    # Check the array of numbers and select the appropriate word.
     for i in range(0,len(mang_so)):
         if(mang_so[i]>=0 and mang_so[i]<len(hand)):
             ans = mang_so[i]
             break
 
     return ans
+
 
 class TestPlayer(Player):
 
